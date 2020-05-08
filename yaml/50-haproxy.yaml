@@ -14,6 +14,10 @@ spec:
       labels:
         app: haproxy
     spec:
+      volumes:
+      - name: dotcmsssl
+        configMap:
+          name: dotcms.ssl.cert
       containers:
       - name: haproxy
         image: dotcms/haproxy:1.8-os
@@ -21,6 +25,11 @@ spec:
         ports:
           - containerPort: 8080
           - containerPort: 8443
+        volumeMounts:
+          - name: dotcmsssl
+            mountPath: "/certs/haproxy.crt"
+            subPath: "haproxy.crt"
+
 ---
 apiVersion: v1
 kind: Service
