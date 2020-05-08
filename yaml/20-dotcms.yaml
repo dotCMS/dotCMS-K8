@@ -2,6 +2,8 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: dotcms
+  labels: 
+    app: dotcms
 spec:
   replicas: 1
   selector:
@@ -41,13 +43,17 @@ spec:
           protocol: TCP
         - containerPort: 8082
           protocol: TCP
+        - containerPort: 5701
+          protocol: TCP
+        - containerPort: 5701
+          protocol: UDP
         env:
         - name: CMS_HEAP_SIZE
           value: 2G
         - name: CMS_JAVA_OPTS
           value: -XX:+PrintFlagsFinal
         - name: PROVIDER_DB_DNSNAME
-          value: db-svc
+          value: postgres
         - name: PROVIDER_ELASTICSEARCH_DNSNAMES
           value: opendistro-es-client-service
         - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MAX
@@ -58,3 +64,20 @@ spec:
         - name: cmsshared
           mountPath: /data/shared
       restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotcms
+spec:
+  ports:
+  - name: dotcms-http
+    port: 8081
+    protocol: TCP
+  - name: dotcms-https
+    port: 8082
+    protocol: TCP
+  selector:
+    app: dotcms
+  type: ClusterIP
+  

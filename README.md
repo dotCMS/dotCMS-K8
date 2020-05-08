@@ -10,7 +10,7 @@ dotCMS Kubernetes Demo Artifacts
 6. Place a license pack file (license.zip) in this directory.  If you do not have a license pack, please contact support (email:support@dotcms.com or use [support portal](https://helpdesk.dotcms.com/))
 
 ## Instructions ##
-1. Ensure a current `license.zip` file is located in this directory.
+1. In order to scale dotCMS to multiple servers, you will need a license pack, e.g. `license.zip` file is located in this directory.
 2. Run `./setup.sh`
 3. dotCMS is probably still initiallizing but you can start interacting with the cluster now.  Some examples below.
 4. Once finished, you can run `./cleanup.sh` to shutdown cluster and the associated storage - **WARNING** - once the cleanup script is run, all persistent data will be gone.
@@ -33,11 +33,25 @@ dotCMS Kubernetes Demo Artifacts
 `kubectl apply -f deployment.yaml`
 
 
+
 ### Access dotcms
-1. run `kubectl get svc`
-2. locate 'External IP' for haproxy-svc
-3. Open page in browser http://[External IP]/
-4. If you receive a 503 Service Unavailable, dotCMS may still be initializing.  You can just wait and refresh or if you want to view the logs, you can use kubectl logs command to view the logs for the dotcms pod.
+You can access the dotcms using port forwarding, e.g.:
+
+    kubectl port-forward deployment/dotcms 8080
+
+
+### Access Kibana
+ kubectl port-forward deployment/opendistro-es-kibana 5601
+ http://localhost:5601
+admin/admin
+
+
+
+#### External IP
+- run `kubectl get svc`
+- locate 'External IP' for haproxy-svc
+- Open page in browser http://[External IP]/
+- If you receive a 503 Service Unavailable, dotCMS may still be initializing.  You can just wait and refresh or if you want to view the logs, you can use kubectl logs command to view the logs for the dotcms pod.
 
 
 

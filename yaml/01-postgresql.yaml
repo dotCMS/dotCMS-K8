@@ -1,3 +1,35 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dbdata
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    fsType: ext4
+    readOnly: false
+    pdName: dbdata 
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dbdata-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 50Gi
+  volumeName: dbdata
+---
+
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -19,9 +51,13 @@ spec:
       containers:
       - name: postgres
         image: postgres:11
-        command: ["docker-entrypoint.sh"]
-        args: ["-c", "max_connections=200", "-c", "shared_buffers=80MB"]
         imagePullPolicy: Always
+        command:
+          - "docker-entrypoint.sh"
+          - "-c"
+          - "max_connections=1000"
+          - "-c"
+          - "shared_buffers=3GB"
         ports:
         - containerPort: 5432
           protocol: TCP
@@ -39,3 +75,14 @@ spec:
           mountPath: /postgres
       restartPolicy: Always
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: postgres
+  type: ClusterIP
