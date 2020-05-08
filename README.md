@@ -26,8 +26,11 @@ dotCMS Kubernetes Demo Artifacts
 
 `kubectl logs -f --prefix -lapp=haproxy`
 
+`kubectl logs -f --prefix -lapp=postgres`
+
 `kubectl exec -it  {podname} -- /bin/bash`
 
+`kubectl apply -f deployment.yaml`
 
 
 ### Access dotcms

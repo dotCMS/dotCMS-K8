@@ -8,7 +8,7 @@ spec:
   storageClassName: ""
   resources:
     requests:
-      storage: 1000Gi
+      storage: 500Gi
   volumeName: shared
 ---
 apiVersion: v1
@@ -23,19 +23,6 @@ spec:
     requests:
       storage: 10Gi
   volumeName: dbdata
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: es-static-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  storageClassName: ""
-  resources:
-    requests:
-      storage: 10Gi
-  volumeName: esstatic
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -95,136 +82,13 @@ spec:
   type: ClusterIP
 ---
 
-
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: elasticsearch-static
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: elasticsearch-static
-      apptype: elasticsearch
-      appversion: 6.1.3
-  template:
-    metadata:
-      labels:
-        app: elasticsearch-static
-        apptype: elasticsearch
-        appversion: 6.1.3
-    spec:
-      volumes:
-      - name: esstaticstorage
-        persistentVolumeClaim:
-          claimName: es-static-pvc
-      initContainers:
-      - name: esdata-permission-fix
-        image: busybox:1.26.2
-        command: ["/bin/chown","-R","10001", "/data"]
-        volumeMounts:
-        - name: esstaticstorage
-          mountPath: /data
-      containers:
-      - name: esstatic
-        image: dotcms/elasticsearch:6.1.3-os
-        imagePullPolicy: Always
-        ports:
-        - name: http
-          containerPort: 9200
-          protocol: TCP
-        - name: transport
-          containerPort: 9300
-          protocol: TCP
-        env:
-        - name: PROVIDER_ELASTICSEARCH_HEAP_SIZE
-          value: 1500m
-        - name: PROVIDER_ELASTICSEARCH_DNSNAMES
-          value: elasticsearch-svc
-        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MIN
-          value: "1"
-        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_STEP
-          value: "1"
-        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MAX
-          value: "2"
-        - name: PROVIDER_ELASTICSEARCH_ADDR_TRANSPORT
-          value: "0.0.0.0"
-        volumeMounts:
-        - name: esstaticstorage
-          mountPath: /data
-      restartPolicy: Always
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: elasticsearch
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: elasticsearch
-      apptype: elasticsearch
-      appversion: 6.1.3
-  template:
-    metadata:
-      labels:
-        app: elasticsearch
-        apptype: elasticsearch
-        appversion: 6.1.3
-    spec:
-      containers:
-      - name: es
-        image: dotcms/elasticsearch:6.1.3-os
-        imagePullPolicy: Always
-        ports:
-        - name: http
-          containerPort: 9200
-          protocol: TCP
-        - name: transport
-          containerPort: 9300
-          protocol: TCP
-        env:
-        - name: PROVIDER_ELASTICSEARCH_HEAP_SIZE
-          value: 1500m
-        - name: PROVIDER_ELASTICSEARCH_DNSNAMES
-          value: elasticsearch-svc
-        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MIN
-          value: "5"
-        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_STEP
-          value: "1"
-        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MAX
-          value: "15"
-        - name: PROVIDER_ELASTICSEARCH_ADDR_TRANSPORT
-          value: "0.0.0.0"
-        - name: PROVIDER_ELASTICSEARCH_NODE_MASTER
-          value: "false"
-      restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-    name: elasticsearch-svc
-spec:
-  ports:
-  - name: http
-    port: 9200
-  - name: transport
-    port: 9300
-  selector:
-    apptype: elasticsearch
-    appversion: 6.1.3
-    
-  clusterIP: None
-  
-  
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: dotcms
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: dotcms
@@ -273,6 +137,8 @@ spec:
           value: elasticsearch-svc
         - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MAX
           value: "60"
+        - name: PREVENT_SESSION_FIXATION_ON_LOGIN
+          value: "false"
         volumeMounts:
         - name: cmsshared
           mountPath: /data/shared

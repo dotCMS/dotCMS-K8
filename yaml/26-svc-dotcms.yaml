@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotcms
+spec:
+  ports:
+  - name: dotcms-http
+    port: 8081
+    protocol: TCP
+  - name: dotcms-https
+    port: 8082
+    protocol: TCP
+  selector:
+    app: dotcms
+  type: ClusterIP
+  

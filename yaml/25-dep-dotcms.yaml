@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dotcms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dotcms
+  template:
+    metadata:
+      labels:
+        app: dotcms
+    spec:
+      volumes:
+      - name: cmsshared
+        persistentVolumeClaim:
+          claimName: nfsdata-pvc
+      - name: licensefile
+        configMap:
+          name: dotcmslicensepack
+      initContainers:
+      - name: cmsshared-permission-fix
+        image: busybox:1.26.2
+        command:
+          - sh
+          - -c
+          - mkdir -p /data/shared/assets && cp /license.zip /data/shared/assets/.  && chown -R 1000000000 /data/shared
+        volumeMounts:
+        - name: cmsshared
+          mountPath: /data/shared
+        - name: licensefile
+          mountPath: "/license.zip"
+          subPath: "license.zip"
+      containers:
+      - name: dotcms
+        image: dotcms/dotcms:5.3.0-prerelease
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+          protocol: TCP
+        - containerPort: 8082
+          protocol: TCP
+        env:
+        - name: CMS_HEAP_SIZE
+          value: 2G
+        - name: CMS_JAVA_OPTS
+          value: -XX:+PrintFlagsFinal
+        - name: PROVIDER_DB_DNSNAME
+          value: db-svc
+        - name: PROVIDER_ELASTICSEARCH_DNSNAMES
+          value: opendistro-es-client-service
+        - name: PROVIDER_ELASTICSEARCH_SVC_DELAY_MAX
+          value: "60"
+        - name: PREVENT_SESSION_FIXATION_ON_LOGIN
+          value: "false"
+        volumeMounts:
+        - name: cmsshared
+          mountPath: /data/shared
+      restartPolicy: Always
