@@ -28,7 +28,12 @@ spec:
         volumeMounts:
           - name: dotcmsssl
             mountPath: "/certs/haproxy.crt"
-            subPath: "haproxy.crt"
+            subPath: "cert.pem"
+        env:
+        - name: HAPROXY_CERT_PATH
+          value: '/certs'
+        - name: HAPROXY_REDIRECT_HTTPS_ALL
+          value: 'true'
 
 ---
 apiVersion: v1
