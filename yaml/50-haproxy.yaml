@@ -34,6 +34,8 @@ spec:
           value: '/certs'
         - name: HAPROXY_REDIRECT_HTTPS_ALL
           value: 'true'
+        - name: HAPROXY_ADMIN_PASSWORD
+          value: 'dotcmsAdmin'
 
 ---
 apiVersion: v1
