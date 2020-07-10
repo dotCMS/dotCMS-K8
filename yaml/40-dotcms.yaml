@@ -60,7 +60,6 @@ spec:
           value: "60"
         - name: PREVENT_SESSION_FIXATION_ON_LOGIN
           value: "false"
-
         volumeMounts:
         - name: cmsshared
           mountPath: /data/shared
