@@ -240,6 +240,7 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: data
+        finalizer:
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
@@ -250,6 +251,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nfsdata-pvc
+  finalizer:
 spec:
   accessModes:
   - ReadWriteMany

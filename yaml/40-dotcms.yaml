@@ -5,7 +5,7 @@ metadata:
   labels: 
     app: dotcms
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: dotcms
@@ -36,7 +36,7 @@ spec:
           subPath: "license.zip"
       containers:
       - name: dotcms
-        image: dotcms/dotcms:5.3.0-prerelease
+        image: dotcms/dotcms:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
@@ -60,9 +60,11 @@ spec:
           value: "60"
         - name: PREVENT_SESSION_FIXATION_ON_LOGIN
           value: "false"
+
         volumeMounts:
         - name: cmsshared
           mountPath: /data/shared
+          subPath: "dotcms_auth"
       restartPolicy: Always
 ---
 apiVersion: v1
